@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>AN E-LEARNING SYSTEM FOR SENSORY DISABILITY</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #333;
+            color: #fff;
+            padding: 15px 20px;
+            text-align: center;
+        }
+        .container {
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        input[type="text"], input[type="password"], input[type="url"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        .button {
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .button:disabled {
+            background-color: #ddd;
+            cursor: not-allowed;
+        }
+        #adminPage, #userPage, #disabilitySelection, #deafOptions, #blindOptions {
+            display: none;
+        }
+        #errorMessage {
+            color: red;
+            display: none;
+        }
+        .link-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        .link-item {
+            margin: 10px 0;
+        }
+        .remove-button {
+            background-color: #FF5733;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .search-bar {
+            padding: 10px;
+            width: 100%;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        .back-button {
+            margin-top: 20px;
+            padding: 10px 15px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #videoPlayerContainer, #websiteContainer {
+            margin-top: 20px;
+            text-align: center;
+        }
+        iframe {
+            width: 80%;
+            height: 400px;
+        }
+        .close-button {
+            margin-top: 10px;
+            padding: 10px 15px;
+            background-color: #FF5733;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>AN E-LEARNING SYSTEM FOR SENSORY DISABILITY</h1>
+    </header>
+
+    <div class="container">
+        <!-- Select Admin or User -->
+        <div id="roleSelection">
+            <h2>Please select your role</h2>
+            <button class="button" onclick="selectRole('admin')">Admin</button>
+            <button class="button" onclick="selectRole('user')">User</button>
+        </div>
+
+        <!-- Disability Selection (appears after selecting User role) -->
+        <div id="disabilitySelection">
+            <h2>What type of disability do you have?</h2>
+            <button class="button" onclick="selectDisability('deaf')">Deaf</button>
+            <button class="button" onclick="selectDisability('blind')">Blind</button>
+        </div>
+
+        <!-- Deaf Options (after Deaf is selected) -->
+        <div id="deafOptions">
+            <h2>You are Deaf. Here is the available search option:</h2>
+            <input type="text" id="searchBar" class="search-bar" placeholder="Search for videos or links..." oninput="searchLinks()">
+            <ul id="userLinkList"></ul>
+            <button class="back-button" onclick="backToDisabilitySelection()">Back to Disability Selection</button>
+        </div>
+
+        <!-- Blind Options (after Blind is selected) -->
+        <div id="blindOptions">
+            <h2>You are Blind. Here are the available links:</h2>
+            <ul id="blindLinksList"></ul>
+            <button class="back-button" onclick="goBackToRoleSelection()">Back to Role Selection</button>
+        </div>
+
+        <!-- Admin Page -->
+        <div id="adminPage">
+            <h2>Admin Login</h2>
+            <div id="errorMessage">Invalid username or password.</div>
+            <div class="form-group">
+                <label for="adminName">Admin Name:</label>
+                <input type="text" id="adminName" placeholder="Enter your name">
+            </div>
+            <div class="form-group">
+                <label for="adminPassword">Password:</label>
+                <input type="password" id="adminPassword" placeholder="Enter your password">
+            </div>
+            <button class="button" onclick="adminLogin()">Login</button>
+        </div>
+
+        <!-- Admin Panel (Shows after login) -->
+        <div id="adminPanel" style="display: none;">
+            <h2>Add New Link</h2>
+            <div class="form-group">
+                <label for="linkName">Name of Link:</label>
+                <input type="text" id="linkName" placeholder="Enter name of the link (e.g., 'Useful Video')">
+            </div>
+            <div class="form-group">
+                <label for="linkInput">Enter YouTube or Website URL:</label>
+                <input type="text" id="linkInput" placeholder="Enter a valid YouTube or Website URL">
+            </div>
+            <button class="button" onclick="saveLink()">Save Link</button>
+            <button class="button" onclick="addAnotherLink()">Add Another Link</button>
+
+            <h3>Added Links</h3>
+            <ul id="linkList"></ul>
+
+            <button class="back-button" onclick="goBackToRoleSelection()">Back to Role Selection</button>
+        </div>
+
+        <!-- User Page (Initially Hidden) -->
+        <div id="userPage" style="display: none;">
+            <h2>Search for Links or Videos</h2>
+            <input type="text" id="searchBar" class="search-bar" placeholder="Search for links or videos..." oninput="searchLinks()">
+            <ul id="userLinkList"></ul>
+            <button class="back-button" onclick="goBackToRoleSelection()">Back to Role Selection</button>
+        </div>
+
+        <!-- Video Player Container (For Playing Videos Inside the Webpage) -->
+        <div id="videoPlayerContainer"></div>
+
+        <!-- Website Container (For Opening Websites Inside the Webpage) -->
+        <div id="websiteContainer"></div>
+    </div>
+
+    <script>
+        const correctAdminName = 'admin'; // Admin login credentials
+        const correctAdminPassword = 'admin123'; // Set password
+        let savedLinks = JSON.parse(localStorage.getItem('savedLinks')) || [];
+
+        // Select whether user is Admin or User
+        function selectRole(role) {
+            if (role === 'admin') {
+                document.getElementById('roleSelection').style.display = 'none';
+                document.getElementById('adminPage').style.display = 'block';
+            } else if (role === 'user') {
+                document.getElementById('roleSelection').style.display = 'none';
+                document.getElementById('disabilitySelection').style.display = 'block';
+            }
+        }
+
+        // Select Disability Type (Deaf or Blind)
+        function selectDisability(disabilityType) {
+            document.getElementById('disabilitySelection').style.display = 'none';
+            if (disabilityType === 'deaf') {
+                document.getElementById('deafOptions').style.display = 'block'; // Show deaf options
+            } else if (disabilityType === 'blind') {
+                document.getElementById('blindOptions').style.display = 'block'; // Show blind options
+                displayBlindLinks(); // Display saved links for blind users
+                readBlindLinks(); // Read out the link names
+            }
+        }
+
+        // Function to read out the available link names for blind users
+        function readBlindLinks() {
+            const linksText = savedLinks.map((link, index) => `${index + 1}. ${link.name}`).join(", ");
+            const utterance = new SpeechSynthesisUtterance(`Here are the available links: ${linksText}. Please enter a number to select a link.`);
+            window.speechSynthesis.speak(utterance);
+
+            // Listen for the user's keypress to enter the number
+            document.addEventListener('keydown', handleBlindUserInput);
+        }
+
+        // Function to handle blind user input (number selection)
+        function handleBlindUserInput(event) {
+            const selectedNumber = parseInt(event.key, 10);
+            if (!isNaN(selectedNumber) && selectedNumber >= 1 && selectedNumber <= savedLinks.length) {
+                const selectedLink = savedLinks[selectedNumber - 1]; // Get the selected link by number
+                if (selectedLink.url.includes('youtube.com') || selectedLink.url.includes('youtu.be')) {
+                    playVideo(selectedLink.url); // Play video
+                } else {
+                    openWebsite(selectedLink.url); // Open website
+                }
+            }
+
+            // If space key is pressed, close the content (video or website)
+            if (event.key === ' ') {
+                closeContent();
+            }
+        }
+
+        // Handle Deaf options (Search both Videos and Links)
+        function searchLinks() {
+            const searchQuery = document.getElementById('searchBar').value.toLowerCase();
+            const filteredLinks = savedLinks.filter(link => link.name.toLowerCase().includes(searchQuery) || link.url.toLowerCase().includes(searchQuery));
+            displaySearchResults(filteredLinks);
+        }
+
+        // Display filtered search results for user page
+        function displaySearchResults(filteredLinks) {
+            const userLinkList = document.getElementById('userLinkList');
+            userLinkList.innerHTML = ''; // Clear current list
+            filteredLinks.forEach(link => {
+                const linkItem = document.createElement('li');
+                linkItem.classList.add('link-item');
+                linkItem.innerHTML = `<strong>${link.name}</strong>: 
+                    <a href="#" onclick="openWebsite('${link.url}')">${link.url}</a>
+                    <button class="button" onclick="playVideo('${link.url}')">Play Video</button>`;
+                userLinkList.appendChild(linkItem);
+            });
+        }
+
+        // Admin login functionality
+        function adminLogin() {
+            const adminName = document.getElementById('adminName').value;
+            const adminPassword = document.getElementById('adminPassword').value;
+
+            if (adminName === correctAdminName && adminPassword === correctAdminPassword) {
+                document.getElementById('adminPanel').style.display = 'block'; // Show admin panel
+                document.getElementById('adminPage').style.display = 'none'; // Hide login page
+                displayLinksAdmin(); // Display saved links in admin panel
+            } else {
+                document.getElementById('errorMessage').style.display = 'block'; // Show error message
+            }
+        }
+
+        // Save a new link (YouTube or Website) with a name
+        function saveLink() {
+            const linkName = document.getElementById('linkName').value;
+            const linkInput = document.getElementById('linkInput').value;
+            if (linkName && linkInput) {
+                savedLinks.push({ name: linkName, url: linkInput });
+                localStorage.setItem('savedLinks', JSON.stringify(savedLinks));
+                displayLinksAdmin();
+                document.getElementById('linkName').value = ''; // Clear name input field
+                document.getElementById('linkInput').value = ''; // Clear URL input field
+            }
+        }
+
+        // Display saved links in the admin panel
+        function displayLinksAdmin() {
+            const linkList = document.getElementById('linkList');
+            linkList.innerHTML = ''; // Clear current list
+            savedLinks.forEach((link, index) => {
+                const linkItem = document.createElement('li');
+                linkItem.classList.add('link-item');
+                linkItem.innerHTML = `
+                    <strong>${link.name}</strong>: <a href="${link.url}" target="_blank">${link.url}</a>
+                    <button class="remove-button" onclick="removeLink(${index})">Remove</button>
+                `;
+                linkList.appendChild(linkItem);
+            });
+        }
+
+        // Display links for blind users
+        function displayBlindLinks() {
+            const blindLinksList = document.getElementById('blindLinksList');
+            blindLinksList.innerHTML = ''; // Clear current list
+            savedLinks.forEach(link => {
+                const linkItem = document.createElement('li');
+                linkItem.classList.add('link-item');
+                linkItem.innerHTML = `<strong>${link.name}</strong>: <a href="${link.url}" target="_blank">${link.url}</a>`;
+                blindLinksList.appendChild(linkItem);
+            });
+        }
+
+        // Close any open content (video or website)
+        function closeContent() {
+            const videoPlayerContainer = document.getElementById('videoPlayerContainer');
+            const websiteContainer = document.getElementById('websiteContainer');
+            videoPlayerContainer.innerHTML = ''; // Clear the video player
+            websiteContainer.innerHTML = ''; // Clear the website iframe
+        }
+
+        // Go back to role selection
+        function goBackToRoleSelection() {
+            document.getElementById('roleSelection').style.display = 'block';
+            document.getElementById('disabilitySelection').style.display = 'none';
+            document.getElementById('userPage').style.display = 'none';
+            document.getElementById('adminPage').style.display = 'none';
+            document.getElementById('blindOptions').style.display = 'none';
+            document.getElementById('deafOptions').style.display = 'none';
+            document.getElementById('adminPanel').style.display = 'none';
+        }
+
+        // Remove a link from saved links
+        function removeLink(index) {
+            savedLinks.splice(index, 1);
+            localStorage.setItem('savedLinks', JSON.stringify(savedLinks));
+            displayLinksAdmin(); // Refresh links in admin panel
+            displayBlindLinks(); // Refresh links for blind users
+        }
+
+        // Back to Disability Selection
+        function backToDisabilitySelection() {
+            document.getElementById('deafOptions').style.display = 'none';
+            document.getElementById('disabilitySelection').style.display = 'block';
+        }
+
+        // Play video inside the webpage
+        function playVideo(url) {
+            const videoPlayerContainer = document.getElementById('videoPlayerContainer');
+            const videoId = getYouTubeVideoId(url); // Extract the video ID
+
+            if (videoId) {
+                const iframe = document.createElement('iframe');
+                iframe.src = `https://www.youtube.com/embed/${videoId}`;
+                iframe.frameborder = "0";
+                iframe.allowfullscreen = true;
+                const closeButton = document.createElement('button');
+                closeButton.classList.add('close-button');
+                closeButton.textContent = 'Close Video';
+                closeButton.onclick = closeVideo;
+                
+                videoPlayerContainer.innerHTML = ''; // Clear any previous video
+                videoPlayerContainer.appendChild(iframe); // Append new video
+                videoPlayerContainer.appendChild(closeButton); // Append close button
+            } else {
+                alert('Invalid YouTube URL');
+            }
+        }
+
+        // Close the video
+        function closeVideo() {
+            const videoPlayerContainer = document.getElementById('videoPlayerContainer');
+            videoPlayerContainer.innerHTML = ''; // Clear the video and the close button
+        }
+
+        // Open website inside the webpage
+        function openWebsite(url) {
+            const websiteContainer = document.getElementById('websiteContainer');
+            const iframe = document.createElement('iframe');
+            iframe.src = url;
+            iframe.frameborder = "0";
+            iframe.width = "100%";
+            iframe.height = "600px";  // Adjust the height to fit your design
+
+            // Create a close button to close the iframe
+            const closeButton = document.createElement('button');
+            closeButton.classList.add('close-button');
+            closeButton.textContent = 'Close Website';
+            closeButton.onclick = closeWebsite;
+
+            // Clear any previous content and append the new iframe and close button
+            websiteContainer.innerHTML = ''; // Clear any previous website
+            websiteContainer.appendChild(iframe); // Append new website iframe
+            websiteContainer.appendChild(closeButton); // Append close button
+        }
+
+        // Close the website (remove the iframe and close button)
+        function closeWebsite() {
+            const websiteContainer = document.getElementById('websiteContainer');
+            websiteContainer.innerHTML = ''; // Clear the iframe and the close button
+        }
+
+        // Helper function to extract YouTube video ID from URL
+        function getYouTubeVideoId(url) {
+            const regex = /(?:https?:\/\/(?:www\.)?youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]+)/;
+            const match = url.match(regex);
+            return match ? match[1] : null;
+        }
+    </script>
+</body>
+</html>
